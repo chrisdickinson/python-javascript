@@ -1,0 +1,291 @@
+
+ASSIGNMENT = True
+"""
+~
+!
+<<
+>>
+>>>
+&
+|
+^
+||
+&&
+%
+*
+/
+-
++
+=
+"""
+
+# bitwise operators
+
+def op_invert(thread, rhs):
+    """
+        expr: ~a
+    """
+    rhs = rhs.eval(thread).js_unbox(thread)
+    if thread.typeof(rhs) == 'number':
+        return thread.cons.number(~int(rhs.value))
+    return thread.cons.number('NaN')
+
+def op_bitwise_lshift(thread, lhs, rhs):
+    """
+        expr: a << b
+    """
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+
+    if thread.typeof(lhs) == 'string':
+        lhs = 0
+
+    if thread.typeof(rhs) == 'string':
+        rhs = 0
+
+    return thread.cons.number(int(lhs.value) << int(rhs.value))
+
+def op_bitwise_rshift(thread, lhs, rhs):
+    """
+        expr: a >> b
+    """
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+
+    if thread.typeof(lhs) == 'string':
+        lhs = thread.cons.number(0) 
+
+    if thread.typeof(rhs) == 'string':
+        rhs = thread.cons.number(0) 
+
+    return thread.cons.number(int(lhs.value) >> int(rhs.value))
+
+def op_bitwise_zrshift(thread, lhs, rhs):
+    """
+        expr: a >>> b
+    """
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+
+    if thread.typeof(lhs) == 'string':
+        lhs = thread.cons.number(0) 
+
+    if thread.typeof(rhs) == 'string':
+        rhs = thread.cons.number(0)
+ 
+    return thread.cons.number((int(lhs.value) & 0xFFFFFFFFL) >> int(rhs.value))
+
+def op_bitwise_xor(thread, lhs, rhs):
+    """
+        expr: a ^ b
+    """
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+
+    if thread.typeof(lhs) == 'string':
+        lhs = thread.cons.number(0) 
+
+    if thread.typeof(rhs) == 'string':
+        rhs = thread.cons.number(0)
+
+    return thread.cons.number(int(lhs.value) ^ int(rhs.value))
+
+def op_bitwise_or(thread, lhs, rhs):
+    """
+        expr: a | b
+    """
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+
+    if thread.typeof(lhs) == 'string':
+        lhs = thread.cons.number(0) 
+
+    if thread.typeof(rhs) == 'string':
+        rhs = thread.cons.number(0)
+
+    return thread.cons.number(int(lhs.value) & int(rhs.value))
+
+def op_bitwise_and(thread, lhs, rhs):
+    """
+        expr: a & b
+    """
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+
+    if thread.typeof(lhs) == 'string':
+        lhs = thread.cons.number(0) 
+
+    if thread.typeof(rhs) == 'string':
+        rhs = thread.cons.number(0)
+
+    return thread.cons.number(int(lhs.value) & int(rhs.value))
+
+# boolean
+ 
+def op_not(thread, rhs):
+    """
+        expr: !a
+    """
+    rhs = rhs.eval(thread)
+    return thread.cons.boolean(not rhs.js_bool())
+
+def op_less(thread, lhs, rhs):
+    return thread.cons.boolean(lhs.eval(thread).js_unbox(thread) < rhs.eval(thread).js_unbox(thread))
+
+def op_less_equal(thread, lhs, rhs):
+    return thread.cons.boolean(lhs.eval(thread).js_unbox(thread) <= rhs.eval(thread).js_unbox(thread))
+
+def op_greater(thread, lhs, rhs):
+    return thread.cons.boolean(lhs.eval(thread).js_unbox(thread) > rhs.eval(thread).js_unbox(thread))
+
+def op_greater_equal(thread, lhs, rhs):
+    return thread.cons.boolean(lhs.eval(thread).js_unbox(thread) >= rhs.eval(thread).js_unbox(thread))
+
+def op_and(thread, lhs, rhs):
+    """
+        expr: a && b
+    """
+    lhs = lhs.eval(thread)
+    if lhs.js_bool():
+        return rhs.eval(thread)
+    return lhs
+    
+def op_or(thread, lhs, rhs):
+    """
+        expr: a || b
+    """
+    lhs = lhs.eval(thread)
+    if lhs.js_bool():
+        return lhs
+    return rhs.eval(thread)
+
+def op_equal(thread, lhs, rhs):
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+    return thread.cons.boolean(lhs.value == rhs.value)
+
+def op_strict_equal(thread, lhs, rhs):
+    lhs, rhs = lhs.eval(thread), rhs.eval(thread)
+    lhs_is_obj = thread.typeof(lhs) == 'object'
+    rhs_is_obj = thread.typeof(rhs) == 'object'
+
+    if lhs_is_obj and rhs_is_obj:
+        return thread.cons.boolean(lhs is rhs)
+
+    if lhs_is_obj or rhs_is_obj:
+        return thread.cons.boolean(False)
+
+    return thread.cons.boolean(lhs.js_unbox(thread).value == rhs.js_unbox(thread).value)
+
+# mathe-magical!
+
+# + - * / %
+
+def op_add(thread, lhs, rhs):
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+    if thread.typeof(lhs) == 'string' or thread.typeof(rhs) == 'string':
+        return thread.cons.string(str(lhs) + str(rhs)) 
+
+    return thread.cons.number(lhs.value + rhs.value)
+
+def op_sub(thread, lhs, rhs):
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+    if thread.typeof(lhs) == 'string' or thread.typeof(rhs) == 'string':
+        return thread.cons.number('NaN') 
+    return thread.cons.number(lhs.value - rhs.value)
+
+def op_mul(thread, lhs, rhs):
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+    if thread.typeof(lhs) == 'string' or thread.typeof(rhs) == 'string':
+        return thread.cons.number('NaN') 
+    return thread.cons.number(lhs.value * rhs.value)
+
+def op_div(thread, lhs, rhs):
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+    if thread.typeof(lhs) == 'string' or thread.typeof(rhs) == 'string':
+        return thread.cons.number('NaN')
+
+    try: 
+        return thread.cons.number(lhs.value / rhs.value)
+    except ZeroDivisionError:
+        return thread.cons.number('Infinity')
+
+def op_mod(thread, lhs, rhs):
+    lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
+    if thread.typeof(lhs) == 'string' or thread.typeof(rhs) == 'string':
+        return thread.cons.number('NaN')
+
+    try: 
+        return thread.cons.number(lhs.value % rhs.value)
+    except ZeroDivisionError:
+        return thread.cons.number('NaN')
+
+def op_typeof(thread, rhs):
+    return thread.cons.string(thread.typeof(rhs.eval(thread)))
+
+def op_delete(thread, rhs):
+    obj, prop = rhs.eval(thread)
+    can_delete = obj and prop and obj.has(prop)
+    if can_delete:
+        obj.delete(prop)
+    return thread.cons.boolean(can_delete)
+
+def op_void(thread, rhs):
+    return thread.cons.undefined()
+
+def op_lookup(thread, lhs, rhs, is_assign=False):
+    obj = lhs.eval(thread).js_box(thread)
+    key = str(rhs)
+    prop = obj.js_get_property(thread, key, is_assign)
+    if prop is None and is_assign:
+        return obj.js_set_property(thread, key, thread.cons.undefined())
+    else:
+        return thread.cons.undefined()
+    return prop
+
+def op_dynamic_lookup(thread, lhs, rhs, is_assign=False):
+    obj = lhs.eval(thread).js_box(thread)
+    key = str(rhs.eval(thread).js_unbox(thread))
+    prop = obj.js_get_property(thread, key, is_assign)
+    if prop is None and is_assign:
+        return obj.js_set_property(thread, key, thread.cons.undefined())
+    else:
+        return thread.cons.undefined()
+    return prop
+
+def op_in(thread, lhs, rhs):
+    lhs = str(lhs.eval(thread).js_unbox(thread))
+    rhs = rhs.eval(thread).js_box(thread)
+    if rhs.js_get_property(thread, lhs, ASSIGNMENT) is not None:
+        return thread.cons.boolean(True)
+    return thread.cons.boolean(False)
+
+def op_call(thread, lhs, rhs):
+    if hasattr(lhs, 'op') and lhs.op not in [op_name, op_lookup, op_dynamic_lookup, op_ternary]:
+        return thread.throw(
+            thread.cons.object('TypeError',
+                thread.cons.string('Invalid function call.')
+            )
+        )
+
+    fn = lhs.eval(thread)
+    on = getattr(fn, 'target', None)
+    args = [bit.eval(thread) for bit in rhs]
+    return fn.js_execute(thread, on, args)  
+
+def op_new(thread, lhs, rhs):
+    fn = lhs.eval(thread).js_box(thread)
+    on = JSObject(fn.js_get_property(thread, 'prototype').js_box(thread))
+    args = [bit.eval(thread) for bit in rhs]
+    return fn.js_execute(thread, on, args)  
+
+# ugh, the assignment operator.
+
+def op_assign(thread, lhs, rhs):
+    if not hasattr(lhs, 'op') or lhs.op not in [op_name, op_lookup, op_dynamic_lookup]:
+        return thread.throw(
+            thread.cons.object('ReferenceError',
+                thread.cons.string('Invalid left-hand side in assignment')
+            )
+        )
+
+    prop = lhs.eval(thread, ASSIGNMENT)
+    val = rhs.eval(thread)
+    if hasattr(prop, 'js_set'):
+        return prop.js_set(thread, val)
+    else:
+        return thread.context().set(thread, lhs, rhs)
+
