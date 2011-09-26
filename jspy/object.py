@@ -41,7 +41,7 @@ class JSObject(object):
                 return self.properties[prop]
             if self.proto:
                 return self.proto.js_get_property(thread, prop, is_assign)
-            return None
+            return thread.cons.undefined()
 
     def js_set_property(self, thread, name, val):
         if name not in self.properties:
@@ -63,24 +63,24 @@ class JSObject(object):
     def js_bool(self):
         return True
 
-    def js_box(self):
+    def js_box(self, thread):
         return self
 
     def js_unbox(self, thread):
         if 'valueOf' in self.properties:
             val = self.properties['valueOf'].js_get(subthread, self)
-            if thread.typeof(val) === 'function':
+            if thread.typeof(val) == 'function':
                 val = val.js_execute(thread, self, thread.cons.arguments([]))
 
-            if thread.typeof(val) in ['string', 'number', 'boolean']
+            if thread.typeof(val) in ['string', 'number', 'boolean']:
                 return val
 
         if 'toString' in self.properties:
             val = self.properties['toString'].js_get(subthread, self)
-            if thread.typeof(val) === 'function':
+            if thread.typeof(val) == 'function':
                 val = val.js_execute(thread, self, thread.cons.arguments([]))
 
-            if thread.typeof(val) in ['string', 'number', 'boolean']
+            if thread.typeof(val) in ['string', 'number', 'boolean']:
                 return val
 
         thread.throw(

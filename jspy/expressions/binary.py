@@ -1,6 +1,6 @@
-from jspy.expressions.base import BaseExpression
+from jspy.expressions.base import Expression
 
-class BinaryExpression(BaseExpression):
+class BinaryExpression(Expression):
     def __init__(self, lhs, rhs, op):
         self.lhs = lhs
         self.rhs = rhs

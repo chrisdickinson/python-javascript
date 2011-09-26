@@ -224,6 +224,7 @@ def op_delete(thread, rhs, **kwargs):
     return thread.cons.boolean(can_delete)
 
 def op_void(thread, rhs, **kwargs):
+    rhs.eval(thread)
     return thread.cons.undefined()
 
 def op_lookup(thread, lhs, rhs, is_assign=False):
@@ -254,13 +255,6 @@ def op_in(thread, lhs, rhs, **kwargs):
     return thread.cons.boolean(False)
 
 def op_call(thread, lhs, rhs, **kwargs):
-    if hasattr(lhs, 'op') and lhs.op not in [op_name, op_lookup, op_dynamic_lookup, op_ternary]:
-        return thread.throw(
-            thread.cons.object('TypeError',
-                thread.cons.string('Invalid function call.')
-            )
-        )
-
     fn = lhs.eval(thread)
     on = getattr(fn, 'target', None)
     args = [bit.eval(thread) for bit in rhs]
@@ -272,10 +266,71 @@ def op_new(thread, lhs, rhs, **kwargs):
     args = [bit.eval(thread) for bit in rhs]
     return fn.js_execute(thread, on, args)  
 
+def op_incr(thread, lhs, **kwargs):
+    lhs = lhs.eval(thread).js_unbox(thread)
+    if thread.typeof(lhs) == 'string':
+        val = thread.cons.number('NaN')
+    else:
+        val = thread.cons.number(lhs.value + 1) 
+
+    prop = lhs.eval(thread, ASSIGNMENT)
+    return prop.js_set(thread, val)
+
+def op_postdecr(thread, lhs, **kwargs):
+    lhs = lhs.eval(thread).js_unbox(thread)
+    original = lhs.value
+    if thread.typeof(lhs) == 'string':
+        original = 'NaN'
+        val = thread.cons.number('NaN')
+    else:
+        val = thread.cons.number(lhs.value - 1) 
+
+    prop = lhs.eval(thread, ASSIGNMENT)
+    prop.js_set(thread, val)
+    return thread.cons.number(original)
+
+def op_postincr(thread, lhs, **kwargs):
+    lhs = lhs.eval(thread).js_unbox(thread)
+    original = lhs.value
+    if thread.typeof(lhs) == 'string':
+        original = 'NaN'
+        val = thread.cons.number('NaN')
+    else:
+        val = thread.cons.number(lhs.value + 1) 
+
+    prop = lhs.eval(thread, ASSIGNMENT)
+    prop.js_set(thread, val)
+    return thread.cons.number(original)
+
+def op_decr(thread, lhs, **kwargs):
+    lhs = lhs.eval(thread).js_unbox(thread)
+    if thread.typeof(lhs) == 'string':
+        val = thread.cons.number('NaN')
+    else:
+        val = thread.cons.number(lhs.value - 1) 
+
+    prop = lhs.eval(thread, ASSIGNMENT)
+    return prop.js_set(thread, val)
+
+def op_positive(thread, lhs, **kwargs):
+    lhs = lhs.eval(thread).js_unbox(thread)
+    if thread.typeof(lhs) == 'string':
+        return thread.cons.number('NaN')
+    return thread.cons.number(lhs.value * 1) 
+
+def op_negative(thread, lhs, **kwargs):
+    lhs = lhs.eval(thread).js_unbox(thread)
+    if thread.typeof(lhs) == 'string':
+        return thread.cons.number('NaN')
+    return thread.cons.number(lhs.value * -1) 
+
+def op_passthrough(thread, lhs, **kwargs):
+    return lhs.eval(thread)
+
 # ugh, the assignment operator.
 
 def op_name(thread, lhs, is_assign=False):
-    name = str(lhs)
+    name = str(lhs.id)
     return thread.context().js_get_property(thread, name, is_assign)
 
 def op_assign(thread, lhs, rhs, **kwargs):
@@ -289,3 +344,31 @@ def op_assign(thread, lhs, rhs, **kwargs):
     prop = lhs.eval(thread, ASSIGNMENT)
     val = rhs.eval(thread)
     return prop.js_set(thread, val)
+
+
+def create_assigner(op):
+    def op_assign_add(thread, lhs, rhs, **kwargs):
+        val = op(thread, lhs, rhs, **kwargs)
+
+        if not hasattr(lhs, 'op') or lhs.op not in [op_name, op_lookup, op_dynamic_lookup]:
+            return thread.throw(
+                thread.cons.object('ReferenceError',
+                    thread.cons.string('Invalid left-hand side in assignment')
+                )
+            )
+
+        prop = lhs.eval(thread, ASSIGNMENT)
+        return prop.js_set(thread, val)
+
+op_assign_add = create_assigner(op_add)
+op_assign_sub = create_assigner(op_sub)
+op_assign_mul = create_assigner(op_mul)
+op_assign_div  = create_assigner(op_div)
+op_assign_mod = create_assigner(op_mod)
+op_assign_bitwise_xor  = create_assigner(op_bitwise_xor)
+op_assign_bitwise_or = create_assigner(op_bitwise_or)
+op_assign_bitwise_and = create_assigner(op_bitwise_and)
+op_assign_bitwise_lshift = create_assigner(op_bitwise_lshift)
+op_assign_bitwise_rshift = create_assigner(op_bitwise_rshift)
+op_assign_bitwise_zrshift = create_assigner(op_bitwise_zrshift)
+

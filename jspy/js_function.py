@@ -5,7 +5,7 @@ class JSFunction(JSObject):
     typeof = 'function'
 
     def __init__(self, proto, statements, context, args):
-        super(JSObject, self).__init__(proto)
+        super(JSFunction, self).__init__(proto)
         self.statements = statements
         self.context = context
         self.args = args
@@ -29,7 +29,7 @@ class JSFunction(JSObject):
 
 class JSBuiltInFunction(JSFunction):
     def __init__(self, proto, function):
-        super(JSObject, self).__init__(proto)
+        super(JSBuiltInFunction, self).__init__(proto, None, None, None)
         self.function = function
 
     def js_execute(self, thread, on_object, arguments):
@@ -41,7 +41,7 @@ class JSBuiltInFunction(JSFunction):
         else:
             return value
 
-class JSArguments(JSFunction):
+class JSArguments(JSObject):
     def __init__(self, proto, args):
         super(JSArguments, self).__init__(proto)
         self.define_property('length', len(args), configurable=False)

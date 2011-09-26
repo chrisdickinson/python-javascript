@@ -12,7 +12,7 @@ class JSValue(object):
         return str(self.value)
 
     def js_unbox(self, thread):
-        return self
+        return self.value
 
     def js_box(self, thread):
         thread.cons.object(box_to, self) 
@@ -21,13 +21,11 @@ class Number(JSValue):
     box_to = 'Number'
     typeof = 'number'
 
-
-
     def __init__(self, string_token):
         super(Number, self).__init__(string_token)
-        if self.source === 'NaN':
+        if self.source == 'NaN':
             self.value = float('nan')
-        elif self.source === 'Infinity':
+        elif self.source == 'Infinity':
             self.value = float('inf')
         elif '.' in self.source or 'e' in self.source:
             self.value = float(self.source)

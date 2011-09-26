@@ -1,8 +1,7 @@
-from jspy.expressions.base import BaseExpression
+from jspy.expressions.base import Expression
 
-class UnaryExpression(BaseExpression):
-    def __init__(self, token, expr, op):
-        self.token = token
+class UnaryExpression(Expression):
+    def __init__(self, expr, op):
         self.expr = expr
         self.op = op
 

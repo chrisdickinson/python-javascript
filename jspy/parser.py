@@ -398,7 +398,7 @@ class Parser(object):
             if self.token.id == 'else':
                 # scope.reserve(self.token)
                 self.advance('else')
-                tk.third = self.token.id == ('if' and [self.statement()] or [self.block()])[0]
+                tk.third = (self.token.id == 'if' and [self.statement()] or [self.block()])[0]
             else:
                 tk.third = None
             tk.arity = 'statement'
@@ -417,9 +417,34 @@ class Parser(object):
             elif self.token.id == ')':
                 self.advance(')')
                 tk.second = self.block()
+                tk.id = 'forin'
             else:
                 raise self.exception_class('Expected ``)`` or ``;`` in %s, got ``%s``' % (repr(self.token.token), self.token.id))
+            return tk
 
+        def stmt_do(tk, check_advance):
+            tk.first = self.block()
+            self.advance('while')
+            self.advance('(')
+            tk.second = self.expression(0)
+            self.advance(')')
+            tk.arity = 'statement'
+            return tk
+
+        def stmt_try(tk, check_advance):
+            tk.first = self.block()
+            if self.token.id == 'catch':
+                self.advance('catch')
+                self.advance('(')
+                tk.second = self.token
+                self.advance()
+                self.advance(')') 
+                tk.third = self.block()
+
+            if self.token.id == 'finally':
+                self.advance('finally')
+                tk.fourth = self.block()
+            tk.arity = 'statement'
             return tk
 
         def stmt_break(tk, check_advance):
@@ -442,6 +467,8 @@ class Parser(object):
         self.stmt('continue', stmt_break)
         self.stmt('return', stmt_return)
         self.stmt('throw', stmt_return)
+        self.stmt('try', stmt_try)
+        self.stmt('do', stmt_do)
         self.stmt('{', stmt_block)
 
         self.infix_right('&&', 30)
@@ -516,8 +543,6 @@ class Parser(object):
     def parse(self):
         self.setup_symbols()
         self.setup_parser()
-
-        #import ipdb; ipdb.set_trace()
 
         self.advance()
         s = self.statements()

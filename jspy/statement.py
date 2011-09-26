@@ -1,45 +1,37 @@
 Continue = object()
 Break = object() 
 
-class Return(object):
-    def __init__(value):
-        self.value = value
+class Return(Exception):
+    def __init__(self, val):
+        self.value = val
 
 class Statement(object):
-    def __init__(self, root_expr):
-        self.root_expr = root_expr
+    visit = (True, True, True, True)
 
+    def __init__(self, first, second, third, fourth):
+        self.first = first
+        self.second = second
+        self.third = third
+        self.fourth = fourth
+
+    def eval(self, thread, **kwargs):
+        return self.first.eval(thread)
+
+class IfStatement(Statement):
     def eval(self, thread):
-        self.root_expr.eval(thread)
-
-class IfStatement(object):
-    def __init__(self, root_expr, positive_list, negative_list):
-        self.root_expr = root_expr
-        self.positive_list = positive_list
-        self.negative_list = negative_list
-
-    def eval(self, thread):
-        val = self.root_expr.eval(thread)
+        val = self.first.eval(thread)
         if val.js_bool():
-            for statement in self.positive_list:
-                thread.eval(statement)
-        else:
-            for statement in self.negative_list:
-                thread.eval(statement)
+            [thread.eval(statement) for statement in self.second]
+        elif self.third:
+            [thread.eval(statement) for statement in self.third]
 
-class ForLoop(object):
-    def __init__(self, init_expr, test_expr, post_expr, loop_list):
-        self.init_expr = init_expr
-        self.test_expr = test_expr
-        self.post_expr = post_expr
-        self.loop_list = loop_list
-
+class ForStatement(Statement):
     def eval(self, thread):
-        self.init_expr.eval(thread)
+        self.first.eval(thread)
 
-        predicate = self.test_expr.eval(thread).js_bool()
+        predicate = self.second.eval(thread).js_bool()
         while predicate:
-            for statement in self.loop_list:
+            for statement in self.fourth:
                 try:
                     thread.eval(statement)
                 except Continue:
@@ -47,17 +39,42 @@ class ForLoop(object):
                 except Break:
                     predicate = False
                     break
-            predicate = predicate and self.test_expr.eval(thread).js_bool()
+            self.third.eval(thread)
+            predicate = predicate and self.second.eval(thread).js_bool()
 
-class WhileLoop(object):
-    def __init__(self, root_expr, loop_list):
-        self.root_expr = root_expr
-        self.loop_list = loop_list
+class ForInStatement(Statement):
+    visit = (False, True, True, True)
 
     def eval(self, thread):
-        predicate = self.test_expr.eval(thread).js_bool() 
+        pass
+
+class TryStatement(Statement):
+    visit = (True, False, True, True)
+
+    def eval(self, thread):
+        retval = None
+        try:
+            for statement in self.first:
+                thread.eval(statement)
+        except RuntimeError, e:
+            thread.context().sub()
+            thread.context().js_set_property(self.second.id, e.what)
+            for statement in self.third:
+                thread.eval(statement)
+        except Return, ret:
+            retval = ret
+
+        if self.fourth:
+            for statement in self.fourth:
+                thread.eval(statement)
+            if retval:
+                raise retval
+
+class WhileStatement(Statement):
+    def eval(self, thread):
+        predicate = self.first.eval(thread).js_bool() 
         while predicate:
-            for statement in self.loop_list:
+            for statement in self.second:
                 try:
                     thread.eval(statement)
                 except Continue:
@@ -65,13 +82,13 @@ class WhileLoop(object):
                 except Break:
                     predicate = False
                     break
-            predicate = predicate and self.test_expr.eval(thread).js_bool()
+            predicate = predicate and self.first.eval(thread).js_bool()
 
-class DoWhileLoop(WhileLoop):
+class DoWhileStatement(WhileStatement):
     def eval(self, thread):
         predicate = True
         while predicate:
-            for statement in self.loop_list:
+            for statement in self.first:
                 try:
                     thread.eval(statement)
                 except Continue:
@@ -79,19 +96,10 @@ class DoWhileLoop(WhileLoop):
                 except Break:
                     predicate = False
                     break
-            predicate = predicate and self.test_expr.eval(thread).js_bool()
+            predicate = predicate and self.second.eval(thread).js_bool()
 
-class SwitchStatement(object):
-    def __init__(self, expr, cases):
-        self.expr = expr
-        self.cases = cases
-        self.default_case = None
-        for idx, data in enumerate(self.cases):
-            expr, code = data
-            if expr is None:
-                self.default_case = self.cases[idx:]
-                break
- 
+# this doesn't work:
+class SwitchStatement(Statement):
     def eval(self, thread):
         val = self.expr.eval(thread).js_unbox(thread)
         matched = False
@@ -112,46 +120,26 @@ class SwitchStatement(object):
             except Break:
                 pass
 
-class BreakStatement(object):
+class BreakStatement(Statement):
     def __init__(self):
         pass
 
     def eval(self, thread):
         raise Break
 
-class ContinueStatement(object):
+class ContinueStatement(Statement):
     def __init__(self):
         pass
 
     def eval(self, thread):
         raise Continue 
 
-class ThrowStatement(object):
-    def __init__(self, expr):
-        self.expr = expr
-
+class ThrowStatement(Statement):
     def eval(self, thread):
-        thread.throw(self.expr.eval(thread))
+        thread.throw(self.first.eval(thread))
 
-class ReturnStatement(object):
-    def __init__(self, expr):
-        self.expr = expr
-
+class ReturnStatement(Statement):
     def eval(self, thread):
-        if self.expr:
-            raise Return(self.expr.eval(thread))
+        if self.first:
+            raise Return(self.first.eval(thread))
         raise Return(thread.cons.undefined())
-
-class CatchStatement(object):
-    def __init__(self, catch_expr, catch_list):
-        self.catch_expr = catch_expr
-        self.catch_list = catch_list
-
-    def eval(self, thread):
-        pass
-
-class TryStatement(object):
-    def __init__(self, try_list, catch_stmt, finally_list):
-        pass
-
-  
