@@ -6,5 +6,5 @@ class BinaryExpression(BaseExpression):
         self.rhs = rhs
         self.op = op
 
-    def eval(self, thread):
-        return self.op(thread, self.lhs, self.rhs)
+    def eval(self, thread, **kwargs):
+        return self.op(thread, self.lhs, self.rhs, **kwargs)

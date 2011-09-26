@@ -24,13 +24,13 @@ class Cons(object):
         return Null
 
     def object(self, constructor, *args):
-        cons = self.context.get(self.thread, constructor)
+        cons = self.context.js_get_property(self.thread, constructor).js_box(thread)
         proto = cons.js_get_property(self.thread, 'prototype').js_box(thread)
         obj = JSObject(proto)
         return cons.js_execute(self.thread, obj, self.arguments(args)) 
 
     def function(self, statements, context, arguments, name):
-        cons = self.context.get(self.thread, 'Function')
+        cons = self.context.js_get_property(self.thread, 'Function').js_box(thread)
         proto = cons.js_get_property(self.thread, 'prototype').js_box(thread)
         fn = JSFunction(proto, statements, context, arguments)
 
@@ -40,6 +40,6 @@ class Cons(object):
         return fn
 
     def arguments(self, args):
-        cons = self.context.get(self.thread, 'Arguments')
+        cons = self.context.js_get_property(self.thread, 'Arguments').js_box(thread)
         proto = cons.js_get_property(self.thread, 'prototype').js_box(thread)
         return JSArguments(proto, args)

@@ -21,7 +21,7 @@ ASSIGNMENT = True
 
 # bitwise operators
 
-def op_invert(thread, rhs):
+def op_invert(thread, rhs, **kwargs):
     """
         expr: ~a
     """
@@ -30,7 +30,7 @@ def op_invert(thread, rhs):
         return thread.cons.number(~int(rhs.value))
     return thread.cons.number('NaN')
 
-def op_bitwise_lshift(thread, lhs, rhs):
+def op_bitwise_lshift(thread, lhs, rhs, **kwargs):
     """
         expr: a << b
     """
@@ -44,7 +44,7 @@ def op_bitwise_lshift(thread, lhs, rhs):
 
     return thread.cons.number(int(lhs.value) << int(rhs.value))
 
-def op_bitwise_rshift(thread, lhs, rhs):
+def op_bitwise_rshift(thread, lhs, rhs, **kwargs):
     """
         expr: a >> b
     """
@@ -58,7 +58,7 @@ def op_bitwise_rshift(thread, lhs, rhs):
 
     return thread.cons.number(int(lhs.value) >> int(rhs.value))
 
-def op_bitwise_zrshift(thread, lhs, rhs):
+def op_bitwise_zrshift(thread, lhs, rhs, **kwargs):
     """
         expr: a >>> b
     """
@@ -72,7 +72,7 @@ def op_bitwise_zrshift(thread, lhs, rhs):
  
     return thread.cons.number((int(lhs.value) & 0xFFFFFFFFL) >> int(rhs.value))
 
-def op_bitwise_xor(thread, lhs, rhs):
+def op_bitwise_xor(thread, lhs, rhs, **kwargs):
     """
         expr: a ^ b
     """
@@ -86,7 +86,7 @@ def op_bitwise_xor(thread, lhs, rhs):
 
     return thread.cons.number(int(lhs.value) ^ int(rhs.value))
 
-def op_bitwise_or(thread, lhs, rhs):
+def op_bitwise_or(thread, lhs, rhs, **kwargs):
     """
         expr: a | b
     """
@@ -100,7 +100,7 @@ def op_bitwise_or(thread, lhs, rhs):
 
     return thread.cons.number(int(lhs.value) & int(rhs.value))
 
-def op_bitwise_and(thread, lhs, rhs):
+def op_bitwise_and(thread, lhs, rhs, **kwargs):
     """
         expr: a & b
     """
@@ -116,26 +116,26 @@ def op_bitwise_and(thread, lhs, rhs):
 
 # boolean
  
-def op_not(thread, rhs):
+def op_not(thread, rhs, **kwargs):
     """
         expr: !a
     """
     rhs = rhs.eval(thread)
     return thread.cons.boolean(not rhs.js_bool())
 
-def op_less(thread, lhs, rhs):
+def op_less(thread, lhs, rhs, **kwargs):
     return thread.cons.boolean(lhs.eval(thread).js_unbox(thread) < rhs.eval(thread).js_unbox(thread))
 
-def op_less_equal(thread, lhs, rhs):
+def op_less_equal(thread, lhs, rhs, **kwargs):
     return thread.cons.boolean(lhs.eval(thread).js_unbox(thread) <= rhs.eval(thread).js_unbox(thread))
 
-def op_greater(thread, lhs, rhs):
+def op_greater(thread, lhs, rhs, **kwargs):
     return thread.cons.boolean(lhs.eval(thread).js_unbox(thread) > rhs.eval(thread).js_unbox(thread))
 
-def op_greater_equal(thread, lhs, rhs):
+def op_greater_equal(thread, lhs, rhs, **kwargs):
     return thread.cons.boolean(lhs.eval(thread).js_unbox(thread) >= rhs.eval(thread).js_unbox(thread))
 
-def op_and(thread, lhs, rhs):
+def op_and(thread, lhs, rhs, **kwargs):
     """
         expr: a && b
     """
@@ -144,7 +144,7 @@ def op_and(thread, lhs, rhs):
         return rhs.eval(thread)
     return lhs
     
-def op_or(thread, lhs, rhs):
+def op_or(thread, lhs, rhs, **kwargs):
     """
         expr: a || b
     """
@@ -153,11 +153,11 @@ def op_or(thread, lhs, rhs):
         return lhs
     return rhs.eval(thread)
 
-def op_equal(thread, lhs, rhs):
+def op_equal(thread, lhs, rhs, **kwargs):
     lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
     return thread.cons.boolean(lhs.value == rhs.value)
 
-def op_strict_equal(thread, lhs, rhs):
+def op_strict_equal(thread, lhs, rhs, **kwargs):
     lhs, rhs = lhs.eval(thread), rhs.eval(thread)
     lhs_is_obj = thread.typeof(lhs) == 'object'
     rhs_is_obj = thread.typeof(rhs) == 'object'
@@ -174,26 +174,26 @@ def op_strict_equal(thread, lhs, rhs):
 
 # + - * / %
 
-def op_add(thread, lhs, rhs):
+def op_add(thread, lhs, rhs, **kwargs):
     lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
     if thread.typeof(lhs) == 'string' or thread.typeof(rhs) == 'string':
         return thread.cons.string(str(lhs) + str(rhs)) 
 
     return thread.cons.number(lhs.value + rhs.value)
 
-def op_sub(thread, lhs, rhs):
+def op_sub(thread, lhs, rhs, **kwargs):
     lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
     if thread.typeof(lhs) == 'string' or thread.typeof(rhs) == 'string':
         return thread.cons.number('NaN') 
     return thread.cons.number(lhs.value - rhs.value)
 
-def op_mul(thread, lhs, rhs):
+def op_mul(thread, lhs, rhs, **kwargs):
     lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
     if thread.typeof(lhs) == 'string' or thread.typeof(rhs) == 'string':
         return thread.cons.number('NaN') 
     return thread.cons.number(lhs.value * rhs.value)
 
-def op_div(thread, lhs, rhs):
+def op_div(thread, lhs, rhs, **kwargs):
     lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
     if thread.typeof(lhs) == 'string' or thread.typeof(rhs) == 'string':
         return thread.cons.number('NaN')
@@ -203,7 +203,7 @@ def op_div(thread, lhs, rhs):
     except ZeroDivisionError:
         return thread.cons.number('Infinity')
 
-def op_mod(thread, lhs, rhs):
+def op_mod(thread, lhs, rhs, **kwargs):
     lhs, rhs = lhs.eval(thread).js_unbox(thread), rhs.eval(thread).js_unbox(thread)
     if thread.typeof(lhs) == 'string' or thread.typeof(rhs) == 'string':
         return thread.cons.number('NaN')
@@ -213,17 +213,17 @@ def op_mod(thread, lhs, rhs):
     except ZeroDivisionError:
         return thread.cons.number('NaN')
 
-def op_typeof(thread, rhs):
+def op_typeof(thread, rhs, **kwargs):
     return thread.cons.string(thread.typeof(rhs.eval(thread)))
 
-def op_delete(thread, rhs):
+def op_delete(thread, rhs, **kwargs):
     obj, prop = rhs.eval(thread)
     can_delete = obj and prop and obj.has(prop)
     if can_delete:
         obj.delete(prop)
     return thread.cons.boolean(can_delete)
 
-def op_void(thread, rhs):
+def op_void(thread, rhs, **kwargs):
     return thread.cons.undefined()
 
 def op_lookup(thread, lhs, rhs, is_assign=False):
@@ -246,14 +246,14 @@ def op_dynamic_lookup(thread, lhs, rhs, is_assign=False):
         return thread.cons.undefined()
     return prop
 
-def op_in(thread, lhs, rhs):
+def op_in(thread, lhs, rhs, **kwargs):
     lhs = str(lhs.eval(thread).js_unbox(thread))
     rhs = rhs.eval(thread).js_box(thread)
     if rhs.js_get_property(thread, lhs, ASSIGNMENT) is not None:
         return thread.cons.boolean(True)
     return thread.cons.boolean(False)
 
-def op_call(thread, lhs, rhs):
+def op_call(thread, lhs, rhs, **kwargs):
     if hasattr(lhs, 'op') and lhs.op not in [op_name, op_lookup, op_dynamic_lookup, op_ternary]:
         return thread.throw(
             thread.cons.object('TypeError',
@@ -266,7 +266,7 @@ def op_call(thread, lhs, rhs):
     args = [bit.eval(thread) for bit in rhs]
     return fn.js_execute(thread, on, args)  
 
-def op_new(thread, lhs, rhs):
+def op_new(thread, lhs, rhs, **kwargs):
     fn = lhs.eval(thread).js_box(thread)
     on = JSObject(fn.js_get_property(thread, 'prototype').js_box(thread))
     args = [bit.eval(thread) for bit in rhs]
@@ -274,7 +274,11 @@ def op_new(thread, lhs, rhs):
 
 # ugh, the assignment operator.
 
-def op_assign(thread, lhs, rhs):
+def op_name(thread, lhs, is_assign=False):
+    name = str(lhs)
+    return thread.context().js_get_property(thread, name, is_assign)
+
+def op_assign(thread, lhs, rhs, **kwargs):
     if not hasattr(lhs, 'op') or lhs.op not in [op_name, op_lookup, op_dynamic_lookup]:
         return thread.throw(
             thread.cons.object('ReferenceError',
@@ -284,8 +288,4 @@ def op_assign(thread, lhs, rhs):
 
     prop = lhs.eval(thread, ASSIGNMENT)
     val = rhs.eval(thread)
-    if hasattr(prop, 'js_set'):
-        return prop.js_set(thread, val)
-    else:
-        return thread.context().set(thread, lhs, rhs)
-
+    return prop.js_set(thread, val)
