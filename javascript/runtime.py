@@ -6,6 +6,8 @@ from javascript.thread import Thread
 from javascript.object import JSObject
 
 class Runtime(object):
+    ThreadClass = Thread
+
     def __init__(self):
         self.thread = None
         self.base_context = None
@@ -20,7 +22,7 @@ class Runtime(object):
             extra_context = {}
 
         base_context = Context()
-        thread = Thread(base_context.sub())
+        self.thread = thread = self.ThreadClass(base_context.sub(), self)
         self.setup_context(base_context, thread)
 
         for key, item in extra_context.iteritems():
