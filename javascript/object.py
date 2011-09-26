@@ -55,7 +55,7 @@ class JSObject(object):
         prop.js_set(thread, val)
         return prop
 
-    def js_execute(self, thread, on_object, arguments, FrameKlass):
+    def js_execute(self, thread, on_object, arguments, FrameKlass=None):
         thread.throw(
             thread.cons.object('TypeError', thread.cons.string("OBJECT_NOT_FUNCTION"))
         )
