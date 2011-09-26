@@ -90,7 +90,7 @@ class Visitor(object):
     def visit(self, node):
         if isinstance(node, list):
             # it's a var expression, probably.
-            return [self.visit(n) for n in node]
+            return BlockStatement([self.visit(n) for n in node])
         elif node.arity in ['unary', 'binary', 'ternary', 'function', 'literal', 'name']:
             return Statement(self.visit_expression(node), None, None, None)
         elif node.arity == 'statement':
