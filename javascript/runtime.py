@@ -1,9 +1,9 @@
-from jspy.tokenizer import tokenize
-from jspy.parser import parse
-from jspy.visitor import Visitor
-from jspy.context import Context
-from jspy.thread import Thread
-from jspy.object import JSObject
+from javascript.tokenizer import tokenize
+from javascript.parser import parse
+from javascript.visitor import Visitor
+from javascript.context import Context
+from javascript.thread import Thread
+from javascript.object import JSObject
 
 class Runtime(object):
     def __init__(self):

@@ -1,4 +1,4 @@
-from jspy.expressions.base import Expression
+from javascript.expressions.base import Expression
 
 class UnaryExpression(Expression):
     def __init__(self, expr, op):

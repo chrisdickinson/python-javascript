@@ -1,5 +1,5 @@
-from jspy.expressions.base import Expression
-from jspy.expressions.unary import UnaryExpression
+from javascript.expressions.base import Expression
+from javascript.expressions.unary import UnaryExpression
 
 class LoadExpression(UnaryExpression):
     def eval(self, thread, **kwargs):

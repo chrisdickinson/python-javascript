@@ -15,7 +15,7 @@ class JSObject(object):
             del self.properties[prop]
 
     def define_property(self, name, value, enumerable=True, configurable=True, get=None, set=None, PropertyKlass=None):
-        from jspy.property import Property
+        from javascript.property import Property
         PropertyKlass = PropertyKlass or Property
 
         self.properties[name] = PropertyKlass(

@@ -1,4 +1,4 @@
-from jspy.object import JSObject
+from javascript.object import JSObject
 
 class Context(JSObject):
     def __init__(self, parent=None):

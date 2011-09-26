@@ -1,4 +1,4 @@
-from jspy.object import JSObject
+from javascript.object import JSObject
 import math
 
 class JSValue(object):

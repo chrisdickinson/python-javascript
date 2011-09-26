@@ -1,7 +1,7 @@
-from jspy.operators import *
-from jspy.expressions import *
-from jspy.statement import *
-from jspy.tokenizer import Token
+from javascript.operators import *
+from javascript.expressions import *
+from javascript.statement import *
+from javascript.tokenizer import Token
 
 unary_operators = {
     '(':        op_passthrough,

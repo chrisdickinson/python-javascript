@@ -1,4 +1,4 @@
-from jspy.tokenizer import Token
+from javascript.tokenizer import Token
 
 class SymbolClass(object):
     lbp = 0

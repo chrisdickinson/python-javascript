@@ -1,4 +1,4 @@
-from jspy.expressions.base import Expression
+from javascript.expressions.base import Expression
 
 class BinaryExpression(Expression):
     def __init__(self, lhs, rhs, op):

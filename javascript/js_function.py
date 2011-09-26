@@ -1,5 +1,5 @@
-from jspy.object import JSObject
-from jspy.statement import Return
+from javascript.object import JSObject
+from javascript.statement import Return
 
 class JSFunction(JSObject):
     typeof = 'function'

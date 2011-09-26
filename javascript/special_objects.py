@@ -1,4 +1,4 @@
-from jspy.object import JSObject
+from javascript.object import JSObject
 
 class NilObject(JSObject):
     def __init__(self, name):

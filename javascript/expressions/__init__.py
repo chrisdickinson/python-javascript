@@ -1,6 +1,6 @@
-from jspy.expressions.base import *
-from jspy.expressions.unary import *
-from jspy.expressions.binary import *
-from jspy.expressions.ternary import *
-from jspy.expressions.value import *
+from javascript.expressions.base import *
+from javascript.expressions.unary import *
+from javascript.expressions.binary import *
+from javascript.expressions.ternary import *
+from javascript.expressions.value import *
 

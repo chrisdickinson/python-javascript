@@ -1,4 +1,4 @@
-from jspy.expressions.base import Expression
+from javascript.expressions.base import Expression
 
 class TernaryExpression(Expression):
     def eval(self, thread, **kwargs):

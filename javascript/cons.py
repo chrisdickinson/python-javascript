@@ -1,6 +1,6 @@
-from jspy.value import Number, Boolean, String 
-from jspy.js_function import JSFunction, JSBuiltInFunction, JSArguments 
-from jspy.object import JSObject
+from javascript.value import Number, Boolean, String 
+from javascript.js_function import JSFunction, JSBuiltInFunction, JSArguments 
+from javascript.object import JSObject
 
 class Cons(object):
     def __init__(self, thread, context):
@@ -18,11 +18,11 @@ class Cons(object):
         return String(unicode(val))
 
     def undefined(self):
-        from jspy.special_objects import Undefined
+        from javascript.special_objects import Undefined
         return Undefined
 
     def null(self):
-        from jspy.special_objects import Null
+        from javascript.special_objects import Null
         return Null
 
     def object(self, constructor, *args):

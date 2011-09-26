@@ -1,4 +1,4 @@
-from jspy.cons import Cons
+from javascript.cons import Cons
 
 class RuntimeError(Exception):
     def __init__(self, what):
@@ -30,7 +30,7 @@ class Thread(object):
         self.frame = None
 
     def run(self, statements):
-        from jspy.statement import Return
+        from javascript.statement import Return
 
         self.push_frame(
             None,
