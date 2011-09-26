@@ -5,6 +5,16 @@ class Return(Exception):
     def __init__(self, val):
         self.value = val
 
+class BlockStatement(object):
+    def __init__(self, statements):
+        self.statements = statements
+
+    def eval(self, thread, **kwargs):
+        ret = None
+        for statement in self.statements:
+            ret = thread.eval(statement)
+        return ret
+
 class Statement(object):
     visit = (True, True, True, True)
 
