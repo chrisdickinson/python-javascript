@@ -24,7 +24,7 @@ class Frame(object):
                     self.context.define_property(self.func.args[i], thread.cons.undefined())
 
 class Thread(object):
-    def __init__(self, base_context):
+    def __init__(self, base_context, *args):
         self.cons = Cons(self, base_context)
         self._context = base_context 
         self.frame = None
@@ -38,14 +38,17 @@ class Thread(object):
             self.cons.arguments([]) 
         )
 
+        ret = None
         try:
             for statement in statements:
-                self.eval(statement)
+                ret = self.eval(statement)
         except Return, ret:
             self.pop_frame()
             return ret.value
         else:
             self.pop_frame()
+            if ret is not None:
+                return ret
             return self.cons.undefined()
 
     def eval(self, statement):
