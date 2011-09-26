@@ -12,7 +12,7 @@ class JSValue(object):
         return str(self.value)
 
     def js_unbox(self, thread):
-        return self.value
+        return self
 
     def js_box(self, thread):
         thread.cons.object(box_to, self) 

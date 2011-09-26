@@ -5,7 +5,7 @@ class NilObject(JSObject):
         self.name = name 
         self.properties = {}
 
-    def js_enumerate(self, thread):
+    def js_enumerate(self):
         thread.throw(thread.cons.object('TypeError', thread.cons.string('cannot coerce')))
 
     def js_get_property(self, thread, *args, **kwargs):

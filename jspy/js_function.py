@@ -4,13 +4,14 @@ from jspy.statement import Return
 class JSFunction(JSObject):
     typeof = 'function'
 
-    def __init__(self, proto, statements, context, args):
+    def __init__(self, proto, statements, context, args, name='anonymous'):
         super(JSFunction, self).__init__(proto)
         self.statements = statements
         self.context = context
         self.args = args
+        self.name = name
 
-    def js_execute(self, thread, on_object, arguments):
+    def js_execute(self, thread, on, arguments):
         thread.push_frame(
             self,
             on,
@@ -31,7 +32,7 @@ class JSBuiltInFunction(JSFunction):
     def __init__(self, proto, function):
         super(JSBuiltInFunction, self).__init__(proto, None, None, None)
         self.function = function
-
+        self.name = 'Builtin function %s' % function.func_name
     def js_execute(self, thread, on_object, arguments):
         value = None
         try:
@@ -41,7 +42,44 @@ class JSBuiltInFunction(JSFunction):
         else:
             return value
 
-class JSArguments(JSObject):
+class JSArray(JSObject):
     def __init__(self, proto, args):
-        super(JSArguments, self).__init__(proto)
+        super(JSArray, self).__init__(proto)
+        self.items = []
+
+    def js_set_property(self, thread, name, val):
+        try:
+            id = int(name)
+            l = len(self.items)
+            if id > l:
+                items = []
+                for i in range(l, id):
+                    item = thread.cons.undefined()
+                    items.append(item)
+                    self.define_property(str(i), item)
+                self.items += items
+                self.items[id] = val
+            else:
+                self.items[id] = val
+        except ValueError:
+            pass
+        super(JSArray, self).js_set_property(thread, name, val)
+
+    def js_get_property(self, thread, name):
+        try:
+            id = int(name)
+            return self.items[id]
+        except (ValueError, IndexError), e:
+            pass
+        super(JSArray, self).js_get_property(thread, name, val)
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, *args):
+        return self.items.__getitem__(*args)
+
+class JSArguments(JSArray):
+    def __init__(self, proto, args):
+        super(JSArguments, self).__init__(proto, args)
         self.define_property('length', len(args), configurable=False)

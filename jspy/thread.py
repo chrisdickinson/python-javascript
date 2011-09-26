@@ -15,13 +15,13 @@ class Frame(object):
     def set_args(self, thread): 
         last = 0
         if self.func: 
-            for idx, val in enumerate(args):
-                self.context.set(thread, self.func.args[idx], val)
+            for idx, val in enumerate(self.args):
+                self.context.define_property(self.func.args[idx], val)
                 last = idx
 
-            if last < len(self.func.args):
+            if last < len(self.func.args)-1:
                 for i in range(last, len(self.func.args)):
-                    self.context.set(thread, self.func.args[idx], thread.cons.undefined())
+                    self.context.define_property(self.func.args[i], thread.cons.undefined())
 
 class Thread(object):
     def __init__(self, base_context):

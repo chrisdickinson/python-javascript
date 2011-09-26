@@ -1,5 +1,7 @@
 from jspy.value import Number, Boolean, String 
 from jspy.js_function import JSFunction, JSBuiltInFunction, JSArguments 
+from jspy.object import JSObject
+
 class Cons(object):
     def __init__(self, thread, context):
         self.thread = thread
@@ -13,7 +15,7 @@ class Cons(object):
         return Boolean(val and 'true' or 'false')
 
     def string(self, val):
-        return String('"%s"' % val)
+        return String(unicode(val))
 
     def undefined(self):
         from jspy.special_objects import Undefined

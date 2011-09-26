@@ -5,5 +5,5 @@ class Expression(object):
         self.third = third
         self.fourth = fourth
 
-    def eval(self, thread):
+    def eval(self, thread, **kwargs):
         return thread.cons.undefined()

@@ -229,11 +229,11 @@ def op_void(thread, rhs, **kwargs):
 
 def op_lookup(thread, lhs, rhs, is_assign=False):
     obj = lhs.eval(thread).js_box(thread)
-    key = str(rhs)
+    key = rhs.id
     prop = obj.js_get_property(thread, key, is_assign)
     if prop is None and is_assign:
         return obj.js_set_property(thread, key, thread.cons.undefined())
-    else:
+    elif is_assign:
         return thread.cons.undefined()
     return prop
 
@@ -250,7 +250,7 @@ def op_dynamic_lookup(thread, lhs, rhs, is_assign=False):
 def op_in(thread, lhs, rhs, **kwargs):
     lhs = str(lhs.eval(thread).js_unbox(thread))
     rhs = rhs.eval(thread).js_box(thread)
-    if rhs.js_get_property(thread, lhs, ASSIGNMENT) is not None:
+    if rhs.js_get_property(thread, lhs, is_assign=ASSIGNMENT) is not None:
         return thread.cons.boolean(True)
     return thread.cons.boolean(False)
 
@@ -273,7 +273,7 @@ def op_incr(thread, lhs, **kwargs):
     else:
         val = thread.cons.number(lhs.value + 1) 
 
-    prop = lhs.eval(thread, ASSIGNMENT)
+    prop = lhs.eval(thread, is_assign=ASSIGNMENT)
     return prop.js_set(thread, val)
 
 def op_postdecr(thread, lhs, **kwargs):
@@ -285,7 +285,7 @@ def op_postdecr(thread, lhs, **kwargs):
     else:
         val = thread.cons.number(lhs.value - 1) 
 
-    prop = lhs.eval(thread, ASSIGNMENT)
+    prop = lhs.eval(thread, is_assign=ASSIGNMENT)
     prop.js_set(thread, val)
     return thread.cons.number(original)
 
@@ -298,7 +298,7 @@ def op_postincr(thread, lhs, **kwargs):
     else:
         val = thread.cons.number(lhs.value + 1) 
 
-    prop = lhs.eval(thread, ASSIGNMENT)
+    prop = lhs.eval(thread, is_assign=ASSIGNMENT)
     prop.js_set(thread, val)
     return thread.cons.number(original)
 
@@ -309,7 +309,7 @@ def op_decr(thread, lhs, **kwargs):
     else:
         val = thread.cons.number(lhs.value - 1) 
 
-    prop = lhs.eval(thread, ASSIGNMENT)
+    prop = lhs.eval(thread, is_assign=ASSIGNMENT)
     return prop.js_set(thread, val)
 
 def op_positive(thread, lhs, **kwargs):
@@ -333,6 +333,10 @@ def op_name(thread, lhs, is_assign=False):
     name = str(lhs.id)
     return thread.context().js_get_property(thread, name, is_assign)
 
+def set_name(thread, lhs, val):
+    name = str(lhs.id)
+    return thread.context().top().js_set_property(thread, name, val)
+
 def op_assign(thread, lhs, rhs, **kwargs):
     if not hasattr(lhs, 'op') or lhs.op not in [op_name, op_lookup, op_dynamic_lookup]:
         return thread.throw(
@@ -341,10 +345,12 @@ def op_assign(thread, lhs, rhs, **kwargs):
             )
         )
 
-    prop = lhs.eval(thread, ASSIGNMENT)
+    prop = lhs.eval(thread, is_assign=ASSIGNMENT)
     val = rhs.eval(thread)
-    return prop.js_set(thread, val)
-
+    if prop:
+        return prop.js_set(thread, val)
+    else:
+        return set_name(thread, lhs.expr, val)
 
 def create_assigner(op):
     def op_assign_add(thread, lhs, rhs, **kwargs):
@@ -357,7 +363,7 @@ def create_assigner(op):
                 )
             )
 
-        prop = lhs.eval(thread, ASSIGNMENT)
+        prop = lhs.eval(thread, is_assign=ASSIGNMENT)
         return prop.js_set(thread, val)
 
 op_assign_add = create_assigner(op_add)

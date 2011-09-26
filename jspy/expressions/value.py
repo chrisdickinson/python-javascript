@@ -1,3 +1,4 @@
+from jspy.expressions.base import Expression
 from jspy.expressions.unary import UnaryExpression
 
 class LoadExpression(UnaryExpression):
@@ -35,16 +36,15 @@ class UndefinedExpression(UnaryExpression):
         return thread.cons.undefined()
 
 class ArrayExpression(UnaryExpression):
-    def eval(self, thread):
+    def eval(self, thread, **kwargs):
         return thread.cons.object('Array', *[expr.eval(thread) for expr in self.expressions])
 
 class ObjectExpression(UnaryExpression):
     def eval(self, thread, **kwargs):
         obj = thread.cons.object('Object')
-        for key_expr, val_expr in self.exprs:
-            key = str(key_expr.eval(thread).js_unbox())
+        for key, val_expr in self.expr:
             val = val_expr.eval(thread)
-            obj.js_set(thread, key, val)
+            obj.define_property(key, val)
         return obj
 
 class RegExpExpression(UnaryExpression):
@@ -59,11 +59,15 @@ class RegExpExpression(UnaryExpression):
         )
         return obj
 
-class FunctionExpression(UnaryExpression):
+class FunctionExpression(Expression):
+    def __init__(self, first, second, name):
+        self.arguments = first
+        self.body = second
+        self.name = name
+
     def eval(self, thread, **kwargs):
         ctxt = thread.context().sub()
-        stmts = thread.parser.parse(self.body)
-        return thread.cons.function(stmts, ctxt, self.args, self.name)         
+        return thread.cons.function(self.body, ctxt, self.arguments, self.name)         
 
 class LiteralExpression(UnaryExpression):
     def eval(self, thread, **kwargs):

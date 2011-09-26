@@ -91,7 +91,7 @@ class Visitor(object):
         if isinstance(node, list):
             # it's a var expression, probably.
             return [self.visit(n) for n in node]
-        elif node.arity in ['unary', 'binary', 'ternary', 'function']:
+        elif node.arity in ['unary', 'binary', 'ternary', 'function', 'literal', 'name']:
             return Statement(self.visit_expression(node), None, None, None)
         elif node.arity == 'statement':
             klass = stmt_map.get(node.id)
@@ -103,10 +103,13 @@ class Visitor(object):
             )
 
     def visit_expression(self, node, **kwargs):
+        if isinstance(node, list):
+            return [self.visit_expression(n) for n in node]
+
         if node.arity == 'name':
             return UnaryExpression(node, op_name)
         elif node.arity == 'unary':
-            return LiteralExpression(node, lambda:0)
+            return self.visit_unary_expression(node)
         elif node.arity == 'binary':
             return self.visit_binary_expression(node)
         elif node.arity == 'ternary':
@@ -128,7 +131,7 @@ class Visitor(object):
             expression_klass = ArrayExpression
             visit_method = self.visit_array_elements
         elif node.arity == 'name':
-            expression_klass = LoadExpression
+            expression_klass = LiteralExpression
             visit_method = lambda x: x
         else:
             op = unary_operators.get(node.id)
@@ -138,7 +141,7 @@ class Visitor(object):
         expression_klass = BinaryExpression
         op = binary_operators.get(node.id)
         visit_method = self.visit_expression
-        return expression_klass(visit_method(node.first), node.id == '.' and node.second or visit_method(node.second), op)
+        return expression_klass(visit_method(node.first, from_node=node), node.id == '.' and node.second or visit_method(node.second, from_node=node), op)
 
     def visit_ternary_expression(self, node, **kwargs):
         return TernaryExpression(
@@ -146,6 +149,12 @@ class Visitor(object):
             self.visit_expression(node.second),
             self.visit_expression(node.third)
         )
+
+    def visit_object_keys(self, node, **kwargs):
+        out = []
+        for expr in node:
+            out.append([expr.key, self.visit(expr)])
+        return out 
 
     def visit_literal_expression(self, node, **kwargs):
         return {
@@ -155,10 +164,11 @@ class Visitor(object):
             Token.Undefined:UndefinedExpression,
             Token.Null:NullExpression,
             Token.Regex:RegExpExpression,
+            Token.Name:LiteralExpression
         }[node.token.type](node.token.value, lambda:0)
 
     def visit_function_expression(self, node, **kwargs):
-        pass
+        return FunctionExpression(node.first, [self.visit(s) for s in node.second], getattr(node, 'name', '<anonymous>')) 
 
     def visit_var_expression(self, node, **kwargs):
         pass

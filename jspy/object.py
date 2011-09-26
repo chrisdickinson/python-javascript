@@ -27,9 +27,9 @@ class JSObject(object):
             set
         )
 
-    def js_enumerate(self, thread):
-        names = [prop for key, prop in self.properties.iteritems() if prop.enumerable]
-        return thread.cons.object('Array', *[thread.cons.string(name) for name in names])
+    def js_enumerate(self):
+        names = [key for key, prop in self.properties.iteritems() if prop.enumerable]
+        return names
 
     def js_get_property(self, thread, prop, is_assign=False):
         if is_assign:
@@ -67,18 +67,15 @@ class JSObject(object):
         return self
 
     def js_unbox(self, thread):
-        if 'valueOf' in self.properties:
-            val = self.properties['valueOf'].js_get(subthread, self)
-            if thread.typeof(val) == 'function':
-                val = val.js_execute(thread, self, thread.cons.arguments([]))
-
+        valueOf = self.js_get_property(thread, 'valueOf')
+        if thread.typeof(valueOf) != 'undefined' and thread.typeof(valueOf) == 'function':
+            val = valueOf.js_execute(thread, self, thread.cons.arguments([]))
             if thread.typeof(val) in ['string', 'number', 'boolean']:
                 return val
 
-        if 'toString' in self.properties:
-            val = self.properties['toString'].js_get(subthread, self)
-            if thread.typeof(val) == 'function':
-                val = val.js_execute(thread, self, thread.cons.arguments([]))
+        toString = self.js_get_property(thread, 'toString')
+        if thread.typeof(toString) != 'undefined' and thread.typeof(toString) == 'function':
+            val = toString.js_execute(thread, self, thread.cons.arguments([]))
 
             if thread.typeof(val) in ['string', 'number', 'boolean']:
                 return val

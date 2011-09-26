@@ -261,19 +261,9 @@ class Parser(object):
 
         def infix_call(tk, left):
             a = []
-            if left.id in ['.', '[']:
-                tk.arity = 'ternary'
-                tk.first = left.first
-                tk.second = left.second
-                tk.third = a
-            else:
-                tk.arity = 'binary'
-                tk.first = left
-                tk.second = a
-                if (left.arity not in ['unary', 'function']) and \
-                   (left.arity != 'name' and left.id != '(' and left.id != '&&' \
-                    and left.id != '||' and left.id != '?'):
-                    raise Exception('Expected a variable name')
+            tk.arity = 'binary'
+            tk.first = left
+            tk.second = a
 
             if self.token.id != ')':
                 while True:
@@ -299,7 +289,7 @@ class Parser(object):
                 while True:
                     if self.token.arity != 'name':
                         raise Exception('Expected a parameter name')
-                    a.append(self.token)
+                    a.append(self.token.value)
                     self.advance()
                     if self.token.id != ',':
                         break

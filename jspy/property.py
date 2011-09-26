@@ -7,6 +7,10 @@ class Property(object):
         self.get = get
         self.set = set
 
+    @property
+    def typeof(self):
+        return self.value.typeof
+
     def unset(self):
         self.target = None
 
@@ -37,6 +41,9 @@ class Property(object):
         if self.get is not None:
             return self.get.js_execute(thread, on, thread.cons.arguments([])).js_unbox(thread)
         return self.value.js_unbox(thread)
+
+    def js_bool(self):
+        return self.value.js_bool()
 
     def js_execute(self, thread, on, args):
         return self.value.js_box(thread).js_execute(thread, on, args)
