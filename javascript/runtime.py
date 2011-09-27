@@ -4,7 +4,7 @@ from javascript.visitor import Visitor
 from javascript.context import Context
 from javascript.thread import Thread
 from javascript.object import JSObject
-
+from javascript.special_objects import *
 class Runtime(object):
     ThreadClass = Thread
 
@@ -21,19 +21,20 @@ class Runtime(object):
         if extra_context is None:
             extra_context = {}
 
-        base_context = Context()
-        self.thread = thread = self.ThreadClass(base_context.sub(), self)
-        self.setup_context(base_context, thread)
+        if not self.thread:
+            base_context = Context()
+            self.thread = thread = self.ThreadClass(base_context.sub(), self)
+            self.setup_context(base_context, thread)
 
-        for key, item in extra_context.iteritems():
-            if type(item) == int:
-                base_context.define_property(key, thread.cons.number(item))
-            elif type(item) in [unicode, str]:
-                base_context.define_property(key, thread.cons.string(unicode(item)))
-            elif type(item) == bool:
-                base_context.define_property(key, thread.cons.boolean(item))
+            for key, item in extra_context.iteritems():
+                if type(item) == int:
+                    base_context.define_property(key, thread.cons.number(item))
+                elif type(item) in [unicode, str]:
+                    base_context.define_property(key, thread.cons.string(unicode(item)))
+                elif type(item) == bool:
+                    base_context.define_property(key, thread.cons.boolean(item))
 
-        return thread.run(self.compile(src))
+        return self.thread.run(self.compile(src))
 
     def setup_context(self, context, thread):
         def Object(thread, on, arguments):
@@ -97,6 +98,27 @@ class Runtime(object):
         JS_Arguments_Proto = JSObject(JS_Object_Proto)
         JS_Arguments.define_property('prototype', JS_Array_Proto)
 
+
+        def log(thread, on, args):
+            def inspect(a):
+                type = thread.typeof(a)
+                if a is Undefined:
+                    return 'undefined'
+                if a is Null:
+                    return 'null'
+                return {
+                    'string':a.js_unbox(thread).value,
+                    'boolean':a.js_bool() and 'true' or 'false',
+                    'number':a.js_unbox(thread).value,
+                    'function':'<function>',
+                    'object':'\n\t%s:%s' % u',\n\t'.join([(key, inspect(a.js_get_property(thread, key))) for key in a.js_box(thread).js_enumerate()])
+                }[type]
+
+            for arg in args:
+                type = thread.typeof(arg)
+                print inspect(arg)
+            return on
+
         def toString(t, on, args):
             return t.cons.string(u'[object Object]')
 
@@ -112,6 +134,10 @@ class Runtime(object):
         context.define_property('Function', JS_Function)
         context.define_property('Array', JS_Array)
         context.define_property('Arguments', JS_Arguments)
+
+        JS_Console = JSObject(JS_Object_Proto)
+        JS_Console.define_property('log', thread.cons.internal_function(log, JS_Function_Proto))
+        context.define_property('console', JS_Console)
 
         return context
 

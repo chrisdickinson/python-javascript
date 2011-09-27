@@ -15,7 +15,7 @@ class JSValue(object):
         return self
 
     def js_box(self, thread):
-        thread.cons.object(box_to, self) 
+        thread.cons.object(self.box_to, self) 
 
 class Number(JSValue):
     box_to = 'Number'
