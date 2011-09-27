@@ -50,7 +50,7 @@ print runtime.run(data, {
 Or, if you like exceptionally painful experiences, feel free to run the repl:
 
 ````bash
-python -c 'from javascript.repl import run_shell; run_shell()
+python -c 'from javascript.repl import run_shell; run_shell()'
 ````
 
 License
